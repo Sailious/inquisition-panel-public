@@ -1,21 +1,21 @@
 "use client"
 
-import {useCallback, useEffect, useState} from "react"
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
-import {Button} from "@/components/ui/button"
-import {Input} from "@/components/ui/input"
-import {Label} from "@/components/ui/label"
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
-import {Badge} from "@/components/ui/badge"
-import {Calendar, Filter, Play, Plus, RefreshCw, Search, User, Zap} from "lucide-react"
-import {apiRequestWithAuth, getStoredToken, isTokenValid} from "@/lib/api-config"
-import {useToast} from "@/hooks/use-toast"
-import {DashboardLayout} from "@/components/dashboard-layout"
-import {useAuth} from "@/contexts/auth-context"
-import {ProuserSubuserAddDialog} from "@/components/prouser-subuser-add-dialog"
-import {UserEditDialog} from "@/components/user-edit-dialog"
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
-import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog"
+import { useCallback, useEffect, useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
+import { Calendar, Filter, Play, Plus, RefreshCw, Search, User, Zap } from "lucide-react"
+import { apiRequestWithAuth, getStoredToken, isTokenValid } from "@/lib/api-config"
+import { useToast } from "@/hooks/use-toast"
+import { DashboardLayout } from "@/components/dashboard-layout"
+import { useAuth } from "@/contexts/auth-context"
+import { ProuserSubuserAddDialog } from "@/components/prouser-subuser-add-dialog"
+import { UserEditDialog } from "@/components/user-edit-dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface SubUserAccount {
   id: number
@@ -226,14 +226,25 @@ export default function SubUsersPage() {
       setLoading(true)
       try {
         let endpoint = "/getSubUserList"
-        const params = new URLSearchParams({
-          type: searchForm.type,
-          current: pageToFetch.toString(),
-          size: pagination.size.toString(),
-        })
+        let params: URLSearchParams
+        
+        // 如果是搜索模式且有关键词，使用专门的搜索接口
         if (isSearchParam && searchForm.keyword.trim()) {
-          params.append("keyword", searchForm.keyword.trim())
+          endpoint = "/searchSubUserByAccount"
+          params = new URLSearchParams({
+            page: pageToFetch.toString(),
+            size: pagination.size.toString(),
+            keyword: searchForm.keyword.trim()
+          })
+        } else {
+          // 否则使用普通列表接口
+          params = new URLSearchParams({
+            type: searchForm.type,
+            current: pageToFetch.toString(),
+            size: pagination.size.toString(),
+          })
         }
+        
         const result: SubUserListResponse = await apiRequestWithAuth(`${endpoint}?${params.toString()}`, token, {
           method: "GET",
         })
@@ -738,4 +749,4 @@ export default function SubUsersPage() {
       <RenewDialog open={showRenewDialog} onOpenChange={setShowRenewDialog} user={renewUser} />
     </DashboardLayout>
   )
-} 
+}
